@@ -5,53 +5,46 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <title>DSC-DUT | Shorten URL tool</title>
-    <link rel="stylesheet" href="css/style.css" />
-    <link rel="shortcut icon" href="/img/dscicon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/loader.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <link rel="shortcut icon" href="/img/favicon.ico" type="image/x-icon">
   </head>
 
   <body>
     <div id="app">
-      <div class="logo">
-        <div>
-          <img class="logo-image" src="/img/dscicon.png" />
-        </div>
-        <div class="logo-font">
-          <div>Developer Student Clubs</div>
-          <div>DaNang University of Science and Technology</div>
-        </div>
+      <div id="app-logo">
+        <img src="/img/logo.png" alt="DSC-DUT Logo">
       </div>
-      <div class="input-group-bg">
-        <div style="font-family: system-ui; padding: 12px">
-          <h2 class="title-shorten">Shorter URL, less pain for your eyes</h2>
-          <form id="form-submit">
-            <input
-              class="input-link"
-              id="input-url"
-              placeholder="Insert long URL here..."
-              type="text"
-            />
-            <input
-              class="input-link"
-              id="input-slug"
-              placeholder="Custom slug"
-              type="text"
-            />
-            <button class="button-submit" id="submit-url">Shorten URL</button>
-          </form>
-          <br />
-          <div class="output-group">
-            <input
-              class="output-link"
-              id="output-url"
-              placeholder="Shorten Link"
-            />
-            <button id="copybt">
-              <img class="iconCopy" src="/img/icon.png" />
-            </button>
+      <div id="app-container">
+        <h1>
+          Shorter URL, less pain for your eyes
+        </h1>
+        <form id="app-form">
+          <input type="text" class="app-input" id="app-input-url" placeholder="Input your url" />
+          <input type="text" class="app-input slug" id="app-input-slug" placeholder="Input your custom slug" />
+          <div class="text-right">
+            <button id="app-button-cancel" class="app-button cancel" type="button"> Clear </button>
+            <button id="app-button-submit" class="app-button" type="submit"> Shorten URL </button>
           </div>
+        </form>
+      </div>
+      <div id="app-loader" class="animate__animated animate__fadeOut">
+        <div class="loader">
+          <div class="dot dot1"></div>
+          <div class="dot dot2"></div>
+          <div class="dot dot3"></div>
+          <div class="dot dot4"></div>
+          <div class="dot dot5"></div>
+          <div class="dot dot6"></div>
+          <div class="dot dot7"></div>
         </div>
       </div>
     </div>
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
     <script src="/js/script.js"></script>
   </body>
 </html>

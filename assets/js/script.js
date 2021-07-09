@@ -1,67 +1,128 @@
-checkFormat = (myURL) => {
-  const pattern =
-    /^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)+[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/gm;
-  return pattern.test(myURL);
-};
+var appBaseUrl = window.location.href
 
-checkNull = (inputLink, customSlug) => {
-  localUrl = 'http://localhost:5000/'; // for testing on dev environment
-  const baseUrl = window.location.href.match(/.*com\//i) || localUrl; // get page domain
-  const body = {
-    url: inputLink,
-  };
+var appForm = document.getElementById('app-form')
+var appInputUrl = document.getElementById('app-input-url')
+var appInputSlug = document.getElementById('app-input-slug')
 
-  if (customSlug) body.slug = customSlug;
+var appButtonCancel = document.getElementById('app-button-cancel')
 
-  window
-      .fetch('/api/url', {
-        method: 'POST',
-        body: JSON.stringify(body),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-      .then((res) => res.json())
-      .then((response) => {
-        if (response.error) {
-          alert(response.error);
-        } else {
-          document.getElementById('output-url').value = baseUrl + response.slug;
-        }
-      })
-      .catch((error) => console.error(error));
-};
+var appLoader = document.getElementById('app-loader')
 
-document
-    .getElementById('form-submit')
-    .addEventListener('submit', function(event) {
-      event.preventDefault();
-      let inputLink = document.getElementById('input-url').value;
-      const inputCustomSlug = document.getElementById('input-slug').value;
-      inputLink = inputLink.trim();
-      inputSlug = inputCustomSlug.trim();
-      if (checkFormat(inputLink)) {
-        checkNull(inputLink, inputSlug);
-      } else {
-        if (checkFormat('https://' + inputLink)) {
-          checkNull('https://' + inputLink, inputSlug);
-        } else {
-          alert('Please input your link again!');
-        }
-      }
+function initClipboardAPI() {
+  navigator.permissions.query({name: "clipboard-write"}).then(result => {
+    if (result.state == "granted" || result.state == "prompt") {
+      // write to the clipboard now
+    } else {
+      showAlert("error", "Cannot access to clipboard", "The website cannot copy your URL automatically", "I understand")
+    }
+  });
+}
+
+function updateClipboard(newClip) {
+  navigator.clipboard.writeText(newClip).then(function() {
+    swal({
+      title: "Copied your URL into clipboard",
+      icon: "success",
     });
+  }, function() {
+    /* clipboard write failed */
+  });
+}
 
-document.getElementById('copybt').addEventListener('click', function copy() {
-  const copyText = document.getElementById('output-url');
-  copyText.select();
-  copyText.setSelectionRange(0, 99999); /* For mobile devices*/
-  document.execCommand('copy');
-});
+function showAlert(icon = "success", title, message, buttonText) {
+  var contentElement = document.createElement('div')
+  contentElement.innerHTML = '<b style="font-size: 1.25rem;">' + message + '</b>'
+  return swal({
+    title,
+    icon,
+    content: contentElement,
+    buttons: {
+      confirm: {
+        text: buttonText,
+        value: message,
+        visible: true,
+        className: ["app-button", icon],
+        closeModal: true
+      }
+    },
+  })
+}
 
-const axios = {
-  post: function(url, body) {
-    const xmlhttp = new XMLHttpRequest(); // new HttpRequest instance
-    xmlhttp.open('POST', url);
-    xmlhttp.send(JSON.stringify(body));
-  },
-};
+function showLoader() {
+  appLoader.style.zIndex = 9999999;
+  appLoader.classList.remove("animate__fadeOut")
+  appLoader.classList.add('animate__fadeIn');
+}
+
+function hideLoader() {
+  appLoader.classList.remove("animate__fadeIn")
+  appLoader.classList.add("animate__fadeOut")
+  setTimeout(function () {
+    appLoader.style.zIndex = -1;
+  }, 1000)
+}
+
+
+function validateURL(url, slug) {
+  var urlRegex = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/g
+
+  if (!url) {
+    showAlert("error", "URL is required!", "You cannot shorten nothing", "My bad")
+    return false
+  } else if (!urlRegex.test(url)) {
+    showAlert("error", "Invalid URL!", "Hey hey what is this?", "Oopsie")
+    return false
+  }
+  return true
+}
+
+function submitURL(url, slug) {
+  showLoader()
+  window.fetch('/api/url', {
+      method: 'POST',
+      body: JSON.stringify({url, slug}),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+    .then(function(response) {
+      hideLoader()
+      return response.json()
+    })
+    .then(function(response) {
+      if (response.error) {
+        showAlert("error", "Something is wrong!", response.error, "Try again")
+      } else {
+        showAlert("success", "Copy your URL below", appBaseUrl + response.slug, "Copy URL")
+          .then(function (result) {
+            updateClipboard(result)
+          })
+      }
+    })
+    .catch(function(error) {
+      hideLoader()
+    });
+}
+
+function init() {
+  initClipboardAPI()
+  hideLoader()
+
+  appButtonCancel.addEventListener('click', function (event) {
+    appInputUrl.value = ''
+    appInputSlug.value = ''
+  })
+
+  appForm.addEventListener('submit', function (event) {
+    event.preventDefault()
+
+    var url = appInputUrl.value
+    var slug = appInputSlug.value
+
+    if (validateURL(url, slug)) {
+      submitURL(url, slug)
+    }
+
+  })
+}
+init()
